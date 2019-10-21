@@ -27,6 +27,15 @@ namespace StreamClientProducer
                     Console.WriteLine("The active threads are:");
                     controller.listThreads();
                 }
+                else if (input.Equals("Count"))
+                {
+                    controller.queueSize();
+                }
+                else if (input.Equals("Exit"))
+                {
+                    controller.exit();
+                    active = false;
+                }
             }
 
         }

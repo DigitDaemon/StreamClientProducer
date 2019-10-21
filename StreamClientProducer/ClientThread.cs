@@ -12,7 +12,7 @@ namespace StreamClientProducer
     class ClientThread
     {
         const int ALLOWABLE_FAILURES = 10;
-        const int RESET_CYCLES = 599;
+        const int RESET_CYCLES = 1000;
         static private string username = "DigitDaemon";
         private static string path = Path.Combine(Environment.CurrentDirectory.Replace(@"bin\Debug\netcoreapp2.1", ""), @"Data\");
         static private string password = File.ReadAllText(Path.Combine(path, "Token.txt"));//do not push this!!!
@@ -64,9 +64,30 @@ namespace StreamClientProducer
 
         private void closeThreadResources()
         {
-            client.Close();
-            writer.Close();
-            reader.Close();
+            try
+            {
+                client.Close();
+            }
+            catch (Exception e)
+            {
+
+            }
+            try
+            {
+                writer.Close();
+            }
+            catch (Exception e)
+            {
+
+            }
+            try
+            {
+                reader.Close();
+            }
+            catch (Exception e)
+            {
+
+            }
         }
 
         private void flushThread()
@@ -86,7 +107,7 @@ namespace StreamClientProducer
                 cycles = 0;
             }
 
-            if (cycles % 30 == 0)
+            if (cycles % 100 == 0)
             {
                 Thread.Yield();
                 //Console.WriteLine(channel + " yield at 30");
@@ -97,35 +118,48 @@ namespace StreamClientProducer
                 Connect();
             }
 
-            if (client.Available > 0 || reader.Peek() >= 0)
+            try
             {
-                var message = reader.ReadLine();
-                var uname = "";
-
-
-                message = message.Remove(0, 1);
-                if (message.Contains("@") && !message.Contains("JOIN"))
+                if (client.Available > 0 || reader.Peek() >= 0)
                 {
-                    while (!message[0].Equals('!'))
+
+                    var message = reader.ReadLine();
+                    var uname = "";
+
+                    message = message.Remove(0, 1);
+                    if (message.Contains("@") && !message.Contains("JOIN"))
                     {
-                        uname += message[0];
+                        while (!message[0].Equals('!'))
+                        {
+                            uname += message[0];
+                            message = message.Remove(0, 1);
+                        }
+
+                        message = message.TrimStart(trimChar);
                         message = message.Remove(0, 1);
+                        messageQueue.Enqueue(channel + " " + uname + " " + message);
+                        //Console.WriteLine(uname + ": " + message);
+                    }
+                    else
+                    {
+                        Console.WriteLine(message);
                     }
 
-                    message = message.TrimStart(trimChar);
-                    message = message.Remove(0, 1);
-                    messageQueue.Enqueue(channel + " " + uname + " " + message);
-                    //Console.WriteLine(uname + ": " + message);
+
                 }
                 else
                 {
-                    Console.WriteLine(message);
+                    Thread.Yield();
+                    //Console.WriteLine(channel + " sleep at no messages");
                 }
             }
-            else
+            catch (Exception j)
             {
-                Thread.Sleep(100);
-                //Console.WriteLine(channel + " sleep at no messages");
+                Console.WriteLine("~~~~~~~~~~~~~~~~~~~~ERROR~~~~~~~~~~~~~~~~~~");
+                Console.WriteLine(channel);
+                Console.WriteLine(j.Message);
+                Console.WriteLine(j.StackTrace);
+                flushThread();
             }
 
         }

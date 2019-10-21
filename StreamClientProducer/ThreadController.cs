@@ -15,6 +15,7 @@ namespace StreamClientProducer
         List<bool> ThreadActiveBool;
         List<Thread> pool;
         List<ClientThread> ct;
+        TwitchProducer producer;
 
         public ThreadController()
         {
@@ -26,6 +27,10 @@ namespace StreamClientProducer
             ThreadActiveBool = new List<bool>();
             ct = new List<ClientThread>();
             pool = new List<Thread>();
+            producer = new TwitchProducer(ref messageQueue);
+            Thread pro = new Thread(producer.pThread);
+            pro.Name = "PRODUCER";
+            pro.Start();
         }
 
         public void addThread(string channel)
@@ -68,6 +73,20 @@ namespace StreamClientProducer
             {
                 Console.WriteLine("No active threads");
             }
+        }
+
+        public void queueSize()
+        {
+            Console.WriteLine(messageQueue.Count);
+        }
+
+        public void exit()
+        {
+            while(Channels.Count > 0)
+            {
+                dropThread(Channels[0]);
+            }
+            producer.Kill();
         }
     }
 }
