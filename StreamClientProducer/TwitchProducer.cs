@@ -3,48 +3,50 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using KafkaNet;
-using KafkaNet.Model;
-using KafkaNet.Protocol;
+using System.Threading.Tasks;
+using Confluent.Kafka;
 
 namespace StreamClientProducer
 {
-     
+
 
     class TwitchProducer
     {
-        static Uri uri = new Uri("http://Localhost:9092");
-        static KafkaOptions options = new KafkaOptions(uri);
-        static BrokerRouter router = new BrokerRouter(options);
+        static string server = "Localhost:9092";
         ConcurrentQueue<String> messageQueue;
-        Producer client;
-        private bool Active; 
-        
+        private bool Active;
+        ProducerConfig config;
 
         public TwitchProducer(ref ConcurrentQueue<String> messageQueue)
         {
             this.messageQueue = messageQueue;
-            client = new Producer(router);
+            config = new ProducerConfig { BootstrapServers = server };
+            
+
+
         }
 
-        public void pThread()
+        public void ProducerThread()
         {
+            Console.WriteLine("Producer Thread start");
             this.Active = true;
             int count = 0;
+            var producer = new ProducerBuilder<string, string>(config).Build();
+
             while (this.Active)
             {
                 if (!messageQueue.IsEmpty)
                 {
                     string message;
                     messageQueue.TryDequeue(out message);
-                    Message msg = new Message(message);
+                    string key = message.Substring(0, message.IndexOf(" "));
                     if (message.Contains("!d "))
                     {
-                        client.SendMessageAsync("twitch_command", new List<Message> { msg }).Wait();
+                        producer.ProduceAsync("twitch_command", new Message<string, string> { Key = key, Value = message }).Wait();
                     }
                     else
                     {
-                        client.SendMessageAsync("twitch_message", new List<Message> { msg }).Wait();
+                        producer.ProduceAsync("twitch_message", new Message<string, string> { Key = key, Value = message }).Wait();
                     }
                 }
                 else
@@ -54,21 +56,23 @@ namespace StreamClientProducer
 
                 if (count > 60)
                 {
-                    Thread.Sleep(1000);
+                    Thread.Sleep(500);
                     count = 0;
-                    client.Stop();
-                    client = new Producer(router);
                 }
 
                 count++;
             }
-
-            
         }
 
-        public void Kill()
-        {
-            this.Active = false;
-        }
+            public async Task KillAsync()
+            {
+                while (messageQueue.Count > 0)
+                {
+                    Console.WriteLine(messageQueue.Count);
+                }
+                this.Active = false;
+
+            }
+        
     }
 }

@@ -7,8 +7,9 @@ namespace StreamClientProducer
         static ThreadController controller;
         static void Main(string[] args)
         {
-            controller = new ThreadController();
+            
             bool active = true;
+            controller = new ThreadController();
             while (active)
             {
                 string input = Console.ReadLine();
@@ -39,5 +40,6 @@ namespace StreamClientProducer
             }
 
         }
+
     }
 }

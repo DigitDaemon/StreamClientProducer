@@ -40,9 +40,8 @@ namespace StreamClientProducer
 
         public void CThread()
         {
+            Console.WriteLine("Channel Thread " + channel + " start");
             Connect();
-
-
             trigger.Elapsed += onTick;
 
             while (this.ActiveThread)
@@ -142,7 +141,7 @@ namespace StreamClientProducer
                     }
                     else
                     {
-                        Console.WriteLine(message);
+                        //Console.WriteLine(message);
                     }
 
 
@@ -166,7 +165,8 @@ namespace StreamClientProducer
 
         void Connect()
         {
-            Console.WriteLine(channel + " Connect Start");
+            Console.WriteLine("Connect to " + channel + " start");
+            //Console.WriteLine(channel + " Connect Start");
             int attempts = 0;
             //Connect to twitch irc
             do
@@ -176,20 +176,20 @@ namespace StreamClientProducer
                 {
                     attempts++;
                     client = new TcpClient("irc.chat.twitch.tv.", 6667);
-                    Console.WriteLine(channel + " TcpClient");
+                    //Console.WriteLine(channel + " TcpClient");
                     writer = new StreamWriter(client.GetStream());
-                    Console.WriteLine(channel + " StreamWriter");
+                    //Console.WriteLine(channel + " StreamWriter");
                     reader = new StreamReader(client.GetStream());
-                    Console.WriteLine(channel + " StreamReader");
+                    //Console.WriteLine(channel + " StreamReader");
                     //Log in
                     writer.WriteLine("PASS " + password + Environment.NewLine
                         + "NICK " + username + Environment.NewLine
                         + "USER " + username + " 8 * :" + username);
-                    Console.WriteLine(channel + " Login");
+                    //Console.WriteLine(channel + " Login");
                     writer.WriteLine("JOIN #" + channel);
-                    Console.WriteLine(channel + " Join");
+                    //Console.WriteLine(channel + " Join");
                     writer.Flush();
-                    Console.WriteLine(channel + " flush");
+                    //Console.WriteLine(channel + " flush");
 
                     break;
                 }
@@ -199,10 +199,10 @@ namespace StreamClientProducer
                     if (attempts > ALLOWABLE_FAILURES)
                         throw new Exception("Network Error" + e.Message);
                     else
-                        Thread.Sleep(5000);
+                        Thread.Sleep(1000);
                 }
             } while (true);
-
+            Console.WriteLine("Connect to " + channel + " end");
         }
 
 

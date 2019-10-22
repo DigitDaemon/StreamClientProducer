@@ -16,6 +16,10 @@ namespace StreamClientProducer
         List<Thread> pool;
         List<ClientThread> ct;
         TwitchProducer producer;
+        CommandConsumer command;
+        Thread pro;
+        Thread com;
+
 
         public ThreadController()
         {
@@ -28,9 +32,13 @@ namespace StreamClientProducer
             ct = new List<ClientThread>();
             pool = new List<Thread>();
             producer = new TwitchProducer(ref messageQueue);
-            Thread pro = new Thread(producer.pThread);
+            pro = new Thread(producer.ProducerThread);
             pro.Name = "PRODUCER";
             pro.Start();
+            command = new CommandConsumer(this);
+            com = new Thread(command.CommandThread);
+            com.Name = "Command";
+            com.Start();
         }
 
         public void addThread(string channel)
@@ -71,8 +79,11 @@ namespace StreamClientProducer
             }
             else
             {
-                Console.WriteLine("No active threads");
+                Console.WriteLine("No active channel threads");
             }
+
+            Console.WriteLine("kafka producer" + pro.ThreadState);
+            Console.WriteLine("command consumer" + com.ThreadState);
         }
 
         public void queueSize()
@@ -86,7 +97,10 @@ namespace StreamClientProducer
             {
                 dropThread(Channels[0]);
             }
-            producer.Kill();
+            pro.Priority = ThreadPriority.Highest;
+            producer.KillAsync().Wait();
+            command.Kill();
+            System.Environment.Exit(0);
         }
     }
 }
