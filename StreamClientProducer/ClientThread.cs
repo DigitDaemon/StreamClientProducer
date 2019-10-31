@@ -27,8 +27,9 @@ namespace StreamClientProducer
         int cycles;
         string channel;
         System.Timers.Timer trigger;
+        HashSet<string> blacklist;
 
-        public ClientThread(String channel, int time, ref System.Timers.Timer trigger, ref ConcurrentQueue<string> queue)
+        public ClientThread(String channel, int time, ref System.Timers.Timer trigger, ref ConcurrentQueue<string> queue, ref HashSet<string> blacklist)
         {
             Console.WriteLine(channel + " Thread Start");
             cycles = 0;
@@ -36,6 +37,7 @@ namespace StreamClientProducer
             this.ActiveThread = true;
             this.channel = channel;
             this.trigger = trigger;
+            this.blacklist = blacklist;
         }
 
         public void CThread()
@@ -136,7 +138,8 @@ namespace StreamClientProducer
 
                         message = message.TrimStart(trimChar);
                         message = message.Remove(0, 1);
-                        messageQueue.Enqueue(channel + " " + uname + " " + message);
+                        if(!blacklist.Contains(uname) || message.Contains("!d"))
+                            messageQueue.Enqueue(channel + " " + uname + " " + message);
                         //Console.WriteLine(uname + ": " + message);
                     }
                     else

@@ -16,9 +16,11 @@ namespace StreamClientProducer
         ConsumerConfig config;
         CancellationToken canceltoken;
         CancellationTokenSource source;
+        HashSet<string> blacklist;
 
-        public CommandConsumer(ThreadController controller)
+        public CommandConsumer(ThreadController controller, ref HashSet<string> blacklist)
         {
+            this.blacklist = blacklist;
             this.controller = controller;
             config = new ConsumerConfig
             {
@@ -52,33 +54,53 @@ namespace StreamClientProducer
                     if (!consumeresult.IsPartitionEOF)
                     {
                         var input = consumeresult.Value;
-
+                        string command;
+                        string parameter;
+                        if (input.Contains(" "))
+                        {
+                            command = input.Substring(0, input.IndexOf(" ")).Trim();
+                            parameter = input.Substring(input.IndexOf(" "), input.Length - command.Length).Trim();
+                        }
+                        else
+                        {
+                            command = input;
+                            parameter = "";
+                        }
                         Console.WriteLine("COMMAND----------> " + input);
-                        if (input.Equals("Add Thread"))
+
+                        if (command.Equals("Add-Channel"))
                         {
-                            Console.Write("Name of the channel: ");
-                            controller.addThread(Console.ReadLine());
+                            controller.addThread(parameter);
                         }
-                        else if (input.Equals("Drop Thread"))
+                        else if (command.Equals("Drop-Channel"))
                         {
-                            Console.Write("Name of the channel: ");
-                            controller.dropThread(Console.ReadLine());
+                            controller.dropThread(parameter);
                         }
-                        else if (input.Equals("List Threads"))
+                        else if (command.Equals("SCPList-Channels"))
                         {
                             Console.WriteLine("The active threads are:");
                             controller.listThreads();
                         }
-                        else if (input.Equals("Count"))
+                        else if (command.Equals("SCPCount"))
                         {
-                            controller.queueSize();
+                            Console.WriteLine("The message queue has " + controller.queueSize() + " messages in it right now");
+
                         }
-                        else if (input.Equals("Exit"))
+                        else if (command.Equals("SCPExit") || command.Equals("System-Shutdown"))
                         {
                             controller.exit();
                             Active = false;
                             source.Cancel();
                         }
+                        else if (command.Equals("Blacklist"))
+                        {
+                            blacklist.Add(parameter);
+                        }
+                        else if (command.Equals("Unblacklist"))
+                        {
+                            blacklist.Remove(parameter);
+                        }
+
                     }
                     else
                     {

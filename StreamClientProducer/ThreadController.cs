@@ -19,10 +19,12 @@ namespace StreamClientProducer
         CommandConsumer command;
         Thread pro;
         Thread com;
+        HashSet<string> blacklist;
 
 
         public ThreadController()
         {
+            blacklist = new HashSet<string>();
             trigger = new System.Timers.Timer(100);
             trigger.AutoReset = true;
             trigger.Enabled = true;
@@ -35,7 +37,7 @@ namespace StreamClientProducer
             pro = new Thread(producer.ProducerThread);
             pro.Name = "PRODUCER";
             pro.Start();
-            command = new CommandConsumer(this);
+            command = new CommandConsumer(this, ref blacklist);
             com = new Thread(command.CommandThread);
             com.Name = "Command";
             com.Start();
@@ -43,28 +45,42 @@ namespace StreamClientProducer
 
         public void addThread(string channel)
         {
-            Channels.Add(channel);
-            int index = Channels.FindIndex(a => a.Equals(channel));
-            ct.Add(new ClientThread(channel, 60, ref trigger, ref messageQueue));
-            pool.Add(new Thread(() => ct[index].CThread()));
-            pool[Channels.FindIndex(a => a.Equals(channel))].Name = channel;
-            pool[Channels.FindIndex(a => a.Equals(channel))].Start();
+            if (!channel.Equals(""))
+            {
+                Channels.Add(channel);
+                int index = Channels.FindIndex(a => a.Equals(channel));
+                ct.Add(new ClientThread(channel, 60, ref trigger, ref messageQueue, ref blacklist));
+                pool.Add(new Thread(() => ct[index].CThread()));
+                pool[Channels.FindIndex(a => a.Equals(channel))].Name = channel;
+                pool[Channels.FindIndex(a => a.Equals(channel))].Start();
+            }
+            else
+            {
+                Console.WriteLine("Parrameter needed to exicute command Add-Channel");
+            }
         }
 
         public void dropThread(string channel)
         {
-            try
+            if (!channel.Equals(""))
             {
-                int index = Channels.FindIndex(a => a.Equals(channel));
-                ct[index].Kill();
-                pool.RemoveAt(index);
-                Channels.RemoveAt(index);
-                ct.RemoveAt(index);
-                Console.WriteLine(channel + " dropped");
+                try
+                {
+                    int index = Channels.FindIndex(a => a.Equals(channel));
+                    ct[index].Kill();
+                    pool.RemoveAt(index);
+                    Channels.RemoveAt(index);
+                    ct.RemoveAt(index);
+                    Console.WriteLine(channel + " dropped");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
             }
-            catch (Exception e)
+            else
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine("Parameter needed to exicute Drop-Channel command");
             }
         }
 
@@ -86,9 +102,9 @@ namespace StreamClientProducer
             Console.WriteLine("command consumer" + com.ThreadState);
         }
 
-        public void queueSize()
+        public int queueSize()
         {
-            Console.WriteLine(messageQueue.Count);
+            return messageQueue.Count;
         }
 
         public void exit()

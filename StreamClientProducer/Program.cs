@@ -12,27 +12,40 @@ namespace StreamClientProducer
             controller = new ThreadController();
             while (active)
             {
-                string input = Console.ReadLine();
-
-                if (input.Equals("Add Thread")){
-                    Console.Write("Name of the channel: ");
-                    controller.addThread(Console.ReadLine());
-                }
-                else if (input.Equals("Drop Thread"))
+                var input = Console.ReadLine();
+                string command;
+                string parameter;
+                if (input.Contains(" "))
                 {
-                    Console.Write("Name of the channel: ");
-                    controller.dropThread(Console.ReadLine());
+                    command = input.Substring(0, input.IndexOf(" ")).Trim();
+                    parameter = input.Substring(input.IndexOf(" "), input.Length - command.Length).Trim();
                 }
-                else if (input.Equals("List Threads"))
+                else
+                {
+                    command = input;
+                    parameter = "";
+                }
+
+                Console.WriteLine("COMMAND----------> " + input);
+
+                if (command.Equals("Add-Channel")){
+                    controller.addThread(parameter);
+                }
+                else if (command.Equals("Drop-Channel"))
+                {
+                    controller.dropThread(parameter);
+                }
+                else if (command.Equals("List-Channels"))
                 {
                     Console.WriteLine("The active threads are:");
                     controller.listThreads();
                 }
-                else if (input.Equals("Count"))
+                else if (command.Equals("Count"))
                 {
-                    controller.queueSize();
+                    Console.WriteLine("The message queue has " + controller.queueSize() + " messages in it right now");
+                    
                 }
-                else if (input.Equals("Exit"))
+                else if (command.Equals("Exit"))
                 {
                     controller.exit();
                     active = false;
