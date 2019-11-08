@@ -12,7 +12,7 @@ namespace StreamClientProducer
     class ClientThread
     {
         const int ALLOWABLE_FAILURES = 10;
-        const int RESET_CYCLES = 1000;
+        const int RESET_CYCLES = 100;
         static private string username = "DigitDaemon";
         private static string path = Path.Combine(Environment.CurrentDirectory.Replace(@"bin\Debug\netcoreapp2.1", ""), @"Data\");
         static private string password = File.ReadAllText(Path.Combine(path, "Token.txt"));//do not push this!!!
@@ -71,7 +71,7 @@ namespace StreamClientProducer
             }
             catch (Exception e)
             {
-
+                Console.WriteLine(e.Message);
             }
             try
             {
@@ -79,7 +79,7 @@ namespace StreamClientProducer
             }
             catch (Exception e)
             {
-
+                Console.WriteLine(e.Message);
             }
             try
             {
@@ -87,7 +87,7 @@ namespace StreamClientProducer
             }
             catch (Exception e)
             {
-
+                Console.WriteLine(e.Message);
             }
         }
 
@@ -140,7 +140,7 @@ namespace StreamClientProducer
                         message = message.Remove(0, 1);
                         if(!blacklist.Contains(uname) || message.Contains("!d"))
                             messageQueue.Enqueue(channel + " " + uname + " " + message);
-                        //Console.WriteLine(uname + ": " + message);
+                        Console.WriteLine(uname + ": " + message);
                     }
                     else
                     {
@@ -168,7 +168,7 @@ namespace StreamClientProducer
 
         void Connect()
         {
-            Console.WriteLine("Connect to " + channel + " start");
+            Console.WriteLine("Connect to " + channel);
             //Console.WriteLine(channel + " Connect Start");
             int attempts = 0;
             //Connect to twitch irc
@@ -205,7 +205,7 @@ namespace StreamClientProducer
                         Thread.Sleep(1000);
                 }
             } while (true);
-            Console.WriteLine("Connect to " + channel + " end");
+            //Console.WriteLine("Connect to " + channel + " end");
         }
 
 

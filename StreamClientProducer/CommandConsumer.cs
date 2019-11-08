@@ -92,11 +92,11 @@ namespace StreamClientProducer
                             Active = false;
                             source.Cancel();
                         }
-                        else if (command.Equals("Blacklist"))
+                        else if (command.Equals("SCPBlacklist"))
                         {
                             blacklist.Add(parameter);
                         }
-                        else if (command.Equals("Unblacklist"))
+                        else if (command.Equals("SCPUnblacklist"))
                         {
                             blacklist.Remove(parameter);
                         }

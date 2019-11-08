@@ -50,6 +50,10 @@ namespace StreamClientProducer
                     controller.exit();
                     active = false;
                 }
+                else if (command.Equals("Blacklist"))
+                {
+                    controller.listBlacklist();
+                }
             }
 
         }

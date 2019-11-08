@@ -118,5 +118,14 @@ namespace StreamClientProducer
             command.Kill();
             System.Environment.Exit(0);
         }
+
+        public void listBlacklist()
+        {
+            foreach(string name in blacklist)
+            {
+                Console.WriteLine("The blocked users are:");
+                Console.WriteLine(name);
+            }
+        }
     }
 }

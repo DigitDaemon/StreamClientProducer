@@ -40,7 +40,7 @@ namespace StreamClientProducer
                     string message;
                     messageQueue.TryDequeue(out message);
                     string key = message.Substring(0, message.IndexOf(" "));
-                    if (message.Substring(0,2).Equals("!d"))
+                    if (message.Contains("!d"))
                     {
                         producer.ProduceAsync("twitch_command", new Message<string, string> { Key = key, Value = message }).Wait();
                     }
