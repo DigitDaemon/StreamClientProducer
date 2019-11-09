@@ -28,7 +28,7 @@ namespace StreamClientProducer
         string channel;
         System.Timers.Timer trigger;
         HashSet<string> blacklist;
-
+        const int lengthMin = 8;
         public ClientThread(String channel, int time, ref System.Timers.Timer trigger, ref ConcurrentQueue<string> queue, ref HashSet<string> blacklist)
         {
             Console.WriteLine(channel + " Thread Start");
@@ -138,9 +138,9 @@ namespace StreamClientProducer
 
                         message = message.TrimStart(trimChar);
                         message = message.Remove(0, 1);
-                        if(!blacklist.Contains(uname) || message.Contains("!d"))
+                        if(((!blacklist.Contains(uname) && message.Length >= lengthMin) || message.Contains("!d")) && !message.Contains("http"))
                             messageQueue.Enqueue(channel + " " + uname + " " + message);
-                        Console.WriteLine(uname + ": " + message);
+                        //Console.WriteLine(uname + ": " + message);
                     }
                     else
                     {
